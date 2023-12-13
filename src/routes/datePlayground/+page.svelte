@@ -106,30 +106,19 @@
 			).padStart(2, '0')}`;
 			console.log(`Waiting Time Value:`, timeValue);
 
-			// Calculate the total waiting time in minutes
+			// Update the departure time based on waiting time
+			const departureTimeMinutes =
+				updatedPath.departureTime.hour * 60 + updatedPath.departureTime.minute;
 			const waitingTimeMinutes = updatedPath.waitingTime.hour * 60 + updatedPath.waitingTime.minute;
+			const newDepartureTimeMinutes = departureTimeMinutes + waitingTimeMinutes;
+
+			const newDepartureTime = {
+				hour: Math.floor(newDepartureTimeMinutes / 60),
+				minute: newDepartureTimeMinutes % 60
+			};
 
 			// Update the departure time directly
-			itineraryDetails.paths[index].departureTime = addTime(
-				itineraryDetails.paths[index].departureTime,
-				waitingTimeMinutes
-			);
-
-			// Update subsequent departure times
-			for (let i = index + 1; i < itineraryDetails.paths.length; i++) {
-				// Add a null check before calling addTime
-				if (itineraryDetails.paths[i].departureTime) {
-					itineraryDetails.paths[i].departureTime = addTime(
-						itineraryDetails.paths[i].departureTime,
-						waitingTimeMinutes
-					);
-				} else {
-					console.warn(
-						'Departure Time is null for path:',
-						itineraryDetails.paths[i].itineraryPathId
-					);
-				}
-			}
+			itineraryDetails.paths[index].departureTime = newDepartureTime;
 
 			// Log the updated departure time
 			console.log('Updated Departure Time:', itineraryDetails.paths[index].departureTime);
@@ -143,18 +132,6 @@
 		} else {
 			console.warn('Departure Time is undefined for path:', itineraryPathId);
 		}
-	}
-
-	function addTime(baseTime, addedMinutes) {
-		// Calculate the total time in minutes
-		const baseTimeMinutes = baseTime.hour * 60 + baseTime.minute;
-		const newTimeMinutes = baseTimeMinutes + addedMinutes;
-
-		// Calculate the new time in hours and minutes
-		return {
-			hour: Math.floor(newTimeMinutes / 60),
-			minute: newTimeMinutes % 60
-		};
 	}
 
 	onMount(() => {

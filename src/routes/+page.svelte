@@ -1,5 +1,5 @@
 <script>
-	import City from "./city/+page.svelte"
+	import City from './city/+page.svelte';
 </script>
 
 <main class="main-container">
@@ -11,6 +11,7 @@
 		<a href="/checkroutes">Check Routes</a>
 		<a href="/modal">Modal</a>
 		<a href="/tooltip">Tooltip</a>
+		<a href="/datePlayground">Date/Time Playground</a>
 	</nav>
 </main>
 
