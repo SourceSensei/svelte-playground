@@ -5,6 +5,27 @@
 	let updating = false;
 	$: loading = updating;
 
+	// LOGIC TO BE IMPLEMENTED
+	// const initialDepartureTime = { hour: 9, minute: 0 };
+	// let totalTime = { hour: 2, minute: 40 };
+
+	// const timeFromAbrantesToTramagal = { hour: 0, minute: 14 };
+	// totalTime = {
+	// 	hour: totalTime.hour,
+	// 	minute: totalTime.minute - timeFromAbrantesToTramagal.minute
+	// };
+
+	// const timeFromTramagalToChamusca = { hour: 0, minute: 26 };
+	// totalTime = {
+	// 	hour: totalTime.hour,
+	// 	minute: totalTime.minute - timeFromTramagalToChamusca.minute
+	// };
+
+	// const arrivalTime = {
+	// 	hour: initialDepartureTime.hour + totalTime.hour,
+	// 	minute: initialDepartureTime.minute + totalTime.minute
+	// };
+
 	// Itinerary Details Store
 	let itineraryDetailsStore = writable({
 		paths: [
@@ -50,52 +71,7 @@
 
 	$: itineraryDetails = $itineraryDetailsStore;
 
-	let fetchItineraryDetails = async () => {
-		const url = 'https://rne-simbus.azurewebsites.net/api/v1/Itinerary/1/3';
-		const options = {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		};
-
-		try {
-			const response = await fetch(url, options);
-			if (!response.ok) {
-				throw new Error(`HTTP error! Status: ${response.status}`);
-			}
-
-			const data = await response.json();
-			console.log(data);
-
-			itineraryDetailsStore.set(data);
-		} catch (error) {
-			console.error(error);
-		}
-	};
-
-	let betweenStopsDetailsStore = writable({
-		id: '',
-		from: {
-			stationCode: null,
-			stationName: ''
-		},
-		to: {
-			stationCode: null,
-			stationName: ''
-		},
-		totalDistanceInKm: null,
-		totalTime: {
-			hour: null,
-			minute: null
-		},
-		totalTimeWithMargin: {
-			hour: null,
-			minute: null
-		}
-	});
-
-	$: stopDetails = $betweenStopsDetailsStore;
+	let betweenStopsDetails = [];
 
 	const stopDetailsFetch = async (stationCode1, stationCode2) => {
 		const url = `https://rne-simbus.azurewebsites.net/api/v1/DistancesBetweenLocations/${stationCode1}/${stationCode2}`;
@@ -115,8 +91,31 @@
 			const data = await response.json();
 			console.log(data);
 
-			// Use betweenStopsDetailsStore instead of betweenStopsDetailsStore
-			betweenStopsDetailsStore.set(data);
+			betweenStopsDetails = data;
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	let fetchItineraryDetails = async () => {
+		const url = 'https://rne-simbus.azurewebsites.net/api/v1/Itinerary/1/3';
+		const options = {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		};
+
+		try {
+			const response = await fetch(url, options);
+			if (!response.ok) {
+				throw new Error(`HTTP error! Status: ${response.status}`);
+			}
+
+			const data = await response.json();
+			console.log(data);
+
+			itineraryDetailsStore.set(data);
 		} catch (error) {
 			console.error(error);
 		}
@@ -246,35 +245,12 @@
 		};
 	};
 
-	// LOGIC TO BE IMPLEMENTED
-	// const initialDepartureTime = { hour: 9, minute: 0 };
-	// let totalTime = { hour: 2, minute: 40 };
-
-	// const timeFromAbrantesToTramagal = { hour: 0, minute: 14 };
-	// totalTime = {
-	// 	hour: totalTime.hour,
-	// 	minute: totalTime.minute - timeFromAbrantesToTramagal.minute
-	// };
-
-	// const timeFromTramagalToChamusca = { hour: 0, minute: 26 };
-	// totalTime = {
-	// 	hour: totalTime.hour,
-	// 	minute: totalTime.minute - timeFromTramagalToChamusca.minute
-	// };
-
-	// const arrivalTime = {
-	// 	hour: initialDepartureTime.hour + totalTime.hour,
-	// 	minute: initialDepartureTime.minute + totalTime.minute
-	// };
-
-	// MAIN LOGIC
-
 	onMount(async () => {
 		try {
-			updating = true;
-
 			await fetchItineraryDetails();
 			await stopDetailsFetch(402, 1);
+
+			updating = true;
 		} catch (error) {
 			console.error('Error fetching itinerary details:', error);
 		} finally {
