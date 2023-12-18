@@ -122,57 +122,34 @@
 		}
 	};
 
-	// const addEmptySelect = () => {
-	// 	console.log('Adding empty select...');
-
-	// 	const newEmptyPath = {
-	// 		itineraryPathId: generateUniqueId(),
-	// 		routeCode: null,
-	// 		busStation: {
-	// 			stationCode: null,
-	// 			stationName: ''
-	// 		},
-	// 		departureTime: { hour: 0, minute: 0 },
-	// 		arrivalTime: { hour: 0, minute: 0 },
-	// 		waitingTime: { hour: 0, minute: 0 }
-	// 	};
-
-	// 	itineraryDetailsStore.update((storeValue) => {
-	// 		return {
-	// 			...storeValue,
-	// 			paths: [...storeValue.paths, newEmptyPath]
-	// 		};
-	// 	});
-	// };
-
-	const addEmptySelect = (index) => {
+	const addEmptySelect = () => {
 		console.log('Adding empty select...');
 
-		const newEmptyPath = {
-			itineraryPathId: generateUniqueId(),
-			routeCode: null,
-			busStation: {
-				stationCode: null,
-				stationName: ''
-			},
-			departureTime: { hour: 0, minute: 0 },
-			arrivalTime: { hour: 0, minute: 0 },
-			waitingTime: { hour: 0, minute: 0 }
-		};
+		// Create a new div for the empty select and time inputs
+		const emptySelectContainer = document.getElementById('empty-select-container');
+		const newDiv = document.createElement('div');
 
-		itineraryDetailsStore.update((storeValue) => {
-			const updatedPaths = [...storeValue.paths];
-			updatedPaths.splice(index, 0, newEmptyPath);
+		// Create an empty select element
+		const emptySelect = document.createElement('select');
+		emptySelect.className = 'form-control';
+		newDiv.appendChild(emptySelect);
 
-			return {
-				...storeValue,
-				paths: updatedPaths
-			};
-		});
-	};
+		// Add an empty option to the select
+		const emptyOption = document.createElement('option');
+		emptyOption.value = '';
+		emptyOption.textContent = 'empty';
+		emptySelect.appendChild(emptyOption);
 
-	const generateUniqueId = () => {
-		return '_' + Math.random().toString(36).substr(2, 9);
+		// Create three empty time inputs
+		for (let i = 0; i < 3; i++) {
+			const timeInput = document.createElement('input');
+			timeInput.type = 'time';
+			timeInput.className = 'form-control';
+			newDiv.appendChild(timeInput);
+		}
+
+		// Append the new div to the empty-select-container
+		emptySelectContainer.appendChild(newDiv);
 	};
 
 	// Remove the stop from the paths array
@@ -286,121 +263,6 @@
 	});
 </script>
 
-<!-- <div class="mt-5">
-	<div class="d-flex flex-row">
-		<div class="d-flex flex-column">
-			<div class="d-inline-flex">
-				<div>
-					<h4>Paragens</h4>
-				</div>
-				<div>
-					<button>+ Adicionar</button>
-				</div>
-			</div>
-			<div>
-				<select class="form-control" disabled>
-					<option value={itineraryDetails.departureStation.stationName}>
-						{itineraryDetails.departureStation.stationName}
-					</option>
-				</select>
-			</div>
-			<div>
-				<select name="" id="" class="form-control">
-					<option value="">empty</option>
-				</select>
-			</div>
-			<div>
-				<select class="form-control" disabled>
-					<option value={itineraryDetails.arrivalStation.stationName}>
-						{itineraryDetails.arrivalStation.stationName}
-					</option>
-				</select>
-			</div>
-		</div>
-		<div class="d-flex flex-column">
-			<div><h5>Partidas</h5></div>
-			<div>
-				{#if itineraryDetails.paths[0].departureTime !== null}
-					<input
-						type="time"
-						class="form-control"
-						name="timeInputDeparture"
-						value={`${String(itineraryDetails.paths[0].departureTime.hour || 0).padStart(
-							2,
-							'0'
-						)}:${String(itineraryDetails.paths[0].departureTime.minute || 0).padStart(2, '0')}`}
-						on:change={(event) =>
-							handleUpdateTime(event, itineraryDetails.paths[0].itineraryPathId, 'departure')}
-					/>
-				{/if}
-			</div>
-			<div>
-				<input type="time" class="form-control" />
-			</div>
-			<div>
-				<input type="time" class="form-control" />
-			</div>
-		</div>
-		<div class="d-flex flex-column">
-			<div><h5>Chegadas</h5></div>
-			<div>
-				<input type="time" class="form-control" />
-			</div>
-			<div>
-				<input type="time" class="form-control" />
-			</div>
-			<div>
-				{#if itineraryDetails.paths[itineraryDetails.paths.length - 1].arrivalTime !== null}
-					<input
-						type="time"
-						class="form-control"
-						name="timeInputArrival"
-						value={`${String(
-							itineraryDetails.paths[itineraryDetails.paths.length - 1].arrivalTime.hour || 0
-						).padStart(2, '0')}:${String(
-							itineraryDetails.paths[itineraryDetails.paths.length - 1].arrivalTime.minute || 0
-						).padStart(2, '0')}`}
-						on:change={(event) =>
-							handleUpdateTime(
-								event,
-								itineraryDetails.paths[itineraryDetails.paths.length - 1].itineraryPathId,
-								'arrival'
-							)}
-					/>
-				{/if}
-			</div>
-		</div>
-		<div class="d-flex flex-column">
-			<div><h5>Espera</h5></div>
-			<div class="d-inline-flex">
-				<div>
-					<input type="time" class="form-control" />
-				</div>
-				<div>
-					<button>Eliminar</button>
-				</div>
-			</div>
-
-			<div class="d-inline-flex">
-				<div>
-					<input type="time" class="form-control" />
-				</div>
-				<div>
-					<button>Eliminar</button>
-				</div>
-			</div>
-			<div class="d-inline-flex">
-				<div>
-					<input type="time" class="form-control" />
-				</div>
-				<div>
-					<button>Eliminar</button>
-				</div>
-			</div>
-		</div>
-	</div>
-</div> -->
-
 <div class="mt-5">
 	<div class="d-flex flex-row">
 		<div class="d-flex flex-column">
@@ -409,7 +271,7 @@
 					<h4>Paragens</h4>
 				</div>
 				<div>
-					<button on:click={() => addEmptySelect()}>+ Adicionar</button>
+					<button on:click={addEmptySelect}>+ Adicionar</button>
 				</div>
 			</div>
 			<div>
@@ -419,7 +281,8 @@
 					</option>
 				</select>
 			</div>
-			{#each itineraryDetails.paths as path (path.itineraryPathId)}
+			<div id="empty-select-container"></div>
+			<!-- {#each itineraryDetails.paths as path (path.itineraryPathId)}
 				<div class="d-flex flex-row align-items-center" key={path.itineraryPathId}>
 					<div>
 						<select
@@ -462,7 +325,7 @@
 						</button>
 					</div>
 				</div>
-			{/each}
+			{/each} -->
 			<div>
 				<select class="form-control" disabled>
 					<option value={itineraryDetails.arrivalStation.stationName}>

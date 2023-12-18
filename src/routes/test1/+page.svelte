@@ -122,71 +122,124 @@
 		}
 	};
 
-	// const addEmptySelect = () => {
-	// 	console.log('Adding empty select...');
+	const addEmptySelect = () => {
+		// Get the existing row container
+		const emptyDivContainer = document.getElementById('empty-div-container');
 
-	// 	const newEmptyPath = {
-	// 		itineraryPathId: generateUniqueId(),
-	// 		routeCode: null,
-	// 		busStation: {
-	// 			stationCode: null,
-	// 			stationName: ''
-	// 		},
-	// 		departureTime: { hour: 0, minute: 0 },
-	// 		arrivalTime: { hour: 0, minute: 0 },
-	// 		waitingTime: { hour: 0, minute: 0 }
-	// 	};
+		// Create a new div for the empty select and time inputs
+		const newDiv = document.createElement('div');
+		newDiv.className = 'd-flex flex-row justify-content-center mb-2 mt-2'; // Ensure it's a row
 
-	// 	itineraryDetailsStore.update((storeValue) => {
-	// 		return {
-	// 			...storeValue,
-	// 			paths: [...storeValue.paths, newEmptyPath]
-	// 		};
-	// 	});
+		// Create an empty select element
+		const emptySelect = document.createElement('select');
+		emptySelect.className = 'form-control';
+		emptySelect.onchange = (event) => handleStopSelection(event, emptyDivContainer.children.length);
+
+		// Populate select options with station names
+		itineraryDetails.paths.forEach((path) => {
+			const option = document.createElement('option');
+			option.value = path.busStation.stationName;
+			option.textContent = path.busStation.stationName;
+			option.addEventListener('click', (event) => handleOptionClick(event, path));
+
+			emptySelect.appendChild(option);
+		});
+
+		newDiv.appendChild(emptySelect);
+
+		// Create three empty time inputs
+		for (let i = 0; i < 3; i++) {
+			const timeInput = document.createElement('input');
+			timeInput.type = 'time';
+			timeInput.className = 'form-control';
+			newDiv.appendChild(timeInput);
+		}
+
+		// Create a delete button
+		const deleteButton = document.createElement('button');
+		deleteButton.title = 'Remover';
+		deleteButton.className = 'btn btn-sm btn-danger shadow-sm';
+		deleteButton.innerHTML = '<i class="fas fa-trash fa-sm"></i>';
+		deleteButton.addEventListener('click', () => handleRemoveStop(deleteButton));
+		newDiv.appendChild(deleteButton);
+
+		// Append the new div to the empty-div-container
+		emptyDivContainer.appendChild(newDiv);
+	};
+
+	const handleOptionClick = (event, path) => {
+		// Access the selected option's value
+		const selectedStationName = event.target.value;
+
+		// Do something with the selected station name or path
+		console.log(`Selected station: ${selectedStationName}`);
+		console.log('Path details:', path);
+	};
+
+	const handleStopSelection = async (event, index) => {
+		const selectedStopName = event.target.value;
+		const selectedStop = itineraryDetails.paths.find(
+			(path) => path.busStation.stationName === selectedStopName
+		);
+
+		if (selectedStop) {
+			const firstStationCode = itineraryDetails.departureStation.stationCode;
+			const selectedStationCode = selectedStop.busStation.stationCode;
+
+			// Fetch total time between stations
+			await stopDetailsFetch(firstStationCode, selectedStationCode);
+
+			// Calculate total time and update arrival time for the last station
+			const totalTimeMinutes =
+				betweenStopsDetails.totalTime.hour * 60 + betweenStopsDetails.totalTime.minute;
+			const lastStationIndex = itineraryDetails.paths.length - 1;
+
+			// Update arrival time for the last station
+			itineraryDetails.paths[lastStationIndex].arrivalTime = addTime(
+				itineraryDetails.paths[0].departureTime,
+				totalTimeMinutes
+			);
+
+			// Update total time for the last station
+			itineraryDetails.paths[lastStationIndex].waitingTime = betweenStopsDetails.totalTime;
+
+			// Update departure time for subsequent stations
+			for (let i = lastStationIndex; i < itineraryDetails.paths.length - 1; i++) {
+				itineraryDetails.paths[i + 1].departureTime = addTime(
+					itineraryDetails.paths[i].arrivalTime,
+					totalTimeMinutes
+				);
+			}
+
+			// Trigger update
+			itineraryDetailsStore.set(itineraryDetails);
+		}
+	};
+
+	const handleRemoveStop = (deleteButton) => {
+		// Find the index of the button's parent div within the container
+		const emptyDivContainer = document.getElementById('empty-div-container');
+		const index = Array.from(emptyDivContainer.children).indexOf(deleteButton.parentNode);
+
+		if (index !== -1) {
+			// Remove the corresponding div element from the DOM
+			emptyDivContainer.children[index].remove();
+		} else {
+			console.warn('Unable to determine index for the clicked button.');
+		}
+	};
+
+	// const removeStop = (itineraryPathId) => {
+	// 	itineraryDetailsStore.update((storeValue) => ({
+	// 		...storeValue,
+	// 		paths: storeValue.paths.filter((path) => path.itineraryPathId !== itineraryPathId)
+	// 	}));
 	// };
 
-	const addEmptySelect = (index) => {
-		console.log('Adding empty select...');
+	// const handleRemoveStop = (itineraryPathId) => {
+	// 	removeStop(itineraryPathId);
 
-		const newEmptyPath = {
-			itineraryPathId: generateUniqueId(),
-			routeCode: null,
-			busStation: {
-				stationCode: null,
-				stationName: ''
-			},
-			departureTime: { hour: 0, minute: 0 },
-			arrivalTime: { hour: 0, minute: 0 },
-			waitingTime: { hour: 0, minute: 0 }
-		};
-
-		itineraryDetailsStore.update((storeValue) => {
-			const updatedPaths = [...storeValue.paths];
-			updatedPaths.splice(index, 0, newEmptyPath);
-
-			return {
-				...storeValue,
-				paths: updatedPaths
-			};
-		});
-	};
-
-	const generateUniqueId = () => {
-		return '_' + Math.random().toString(36).substr(2, 9);
-	};
-
-	// Remove the stop from the paths array
-	const removeStop = (itineraryPathId) => {
-		itineraryDetailsStore.update((storeValue) => ({
-			...storeValue,
-			paths: storeValue.paths.filter((path) => path.itineraryPathId !== itineraryPathId)
-		}));
-	};
-
-	const handleRemoveStop = (itineraryPathId) => {
-		removeStop(itineraryPathId);
-		// Later save function here
-	};
+	// };
 
 	// Refactored handleUpdateTime and handleUpdate functions
 	const handleUpdateTime = (event, itineraryPathId, timeType) => {
@@ -290,189 +343,6 @@
 	<h1 class="h3 mb-0 text-gray-800">Editar Circulação</h1>
 </div>
 
-<div class=" mb-4">
-	<div class="card-body">
-		<div class="">
-			<div class="d-flex flex-row justify-content-start mb-5">
-				<div class="d-flex flex-column mr-3">
-					<div class="d-inline-flex mb-3">
-						<h4 class="mr-3 text-dark">Paragens</h4>
-						<button class="btn btn-sm btn-primary shadow-sm" on:click={() => addEmptySelect(1)}
-							><i class="fa-solid fa-plus"></i>&nbsp;Adicionar</button
-						>
-					</div>
-					<div>
-						<div class="mb-4">
-							<select class="form-control" disabled>
-								<option value={itineraryDetails.departureStation.stationName}>
-									{itineraryDetails.departureStation.stationName}
-								</option>
-							</select>
-						</div>
-						{#each itineraryDetails.paths as path, index (path.itineraryPathId)}
-							<div class="mb-4">
-								<select
-									id={`stationInput_${path.itineraryPathId}`}
-									name={`stationInput_${path.itineraryPathId}`}
-									class="form-control"
-									value={itineraryDetails.paths[index].busStation.stationName}
-								>
-									{#each itineraryDetails.paths as stationPath (stationPath.itineraryPathId)}
-										<option value={stationPath.busStation.stationName}
-											>{stationPath.busStation.stationName}</option
-										>
-									{/each}
-								</select>
-							</div>
-						{/each}
-						<div class="mb-4">
-							<select class="form-control" disabled>
-								<option value={itineraryDetails.arrivalStation.stationName}>
-									{itineraryDetails.arrivalStation.stationName}
-								</option>
-							</select>
-						</div>
-					</div>
-				</div>
-				<div class="d-flex flex-column mr-3">
-					<div class="mb-3">
-						<h4 class="mr-3 text-dark">Partida</h4>
-					</div>
-					<div class="mb-3">
-						{#if itineraryDetails.paths[0].departureTime !== null}
-							<input
-								type="time"
-								class="form-control"
-								name="timeInputDeparture"
-								value={`${String(itineraryDetails.paths[0].departureTime.hour || 0).padStart(
-									2,
-									'0'
-								)}:${String(itineraryDetails.paths[0].departureTime.minute || 0).padStart(2, '0')}`}
-								on:change={(event) =>
-									handleUpdateTime(event, itineraryDetails.paths[0].itineraryPathId, 'departure')}
-							/>
-						{:else}
-							<div class="alert alert-warning">No departure time available</div>
-						{/if}
-					</div>
-					{#each itineraryDetails.paths as path (path.itineraryPathId)}
-						<div class="mb-2">
-							{#if path.departureTime !== null}
-								<input
-									type="time"
-									class="form-control"
-									id={`timeInputDeparture_${path.itineraryPathId}`}
-									name={`timeInputDeparture_${path.itineraryPathId}`}
-									value={`${String(path.departureTime.hour).padStart(2, '0')}:${String(
-										path.departureTime.minute
-									).padStart(2, '0')}`}
-									on:change={(event) => handleUpdateTime(event, path.itineraryPathId, 'departure')}
-								/>
-							{:else}
-								<div class="">
-									<input type="time" class="form-control invisible" name="timeInput" />
-								</div>
-							{/if}
-						</div>
-					{/each}
-				</div>
-
-				<div class="d-flex flex-column mr-3">
-					<div class="mb-3">
-						<h4 class="mr-3 text-dark">Chegada</h4>
-					</div>
-					{#each itineraryDetails.paths as path (path.itineraryPathId)}
-						<div class="mb-2">
-							{#if path.arrivalTime !== null}
-								<input
-									type="time"
-									class="form-control"
-									id={`timeInputArrival_${path.itineraryPathId}`}
-									name={`timeInputArrival_${path.itineraryPathId}`}
-									value={`${String(path.arrivalTime.hour).padStart(2, '0')}:${String(
-										path.arrivalTime.minute
-									).padStart(2, '0')}`}
-									on:change={(event) => handleUpdateTime(event, path.itineraryPathId, 'arrival')}
-								/>
-							{:else}
-								<div class="">
-									<input type="time" class="form-control invisible" name="timeInput" />
-								</div>
-							{/if}
-						</div>
-					{/each}
-					<div class="mb-3">
-						{#if itineraryDetails.paths[itineraryDetails.paths.length - 1].arrivalTime !== null}
-							<input
-								type="time"
-								class="form-control"
-								name="timeInputArrival"
-								value={`${String(
-									itineraryDetails.paths[itineraryDetails.paths.length - 1].arrivalTime.hour || 0
-								).padStart(2, '0')}:${String(
-									itineraryDetails.paths[itineraryDetails.paths.length - 1].arrivalTime.minute || 0
-								).padStart(2, '0')}`}
-								on:change={(event) =>
-									handleUpdateTime(
-										event,
-										itineraryDetails.paths[itineraryDetails.paths.length - 1].itineraryPathId,
-										'arrival'
-									)}
-							/>
-						{:else}
-							<div class="alert alert-warning">No arrival time available</div>
-						{/if}
-					</div>
-				</div>
-				<div class="d-flex flex-column mr-3">
-					<div class="mb-3">
-						<h4 class="mr-3 text-dark">Espera</h4>
-					</div>
-					{#each itineraryDetails.paths as path (path.itineraryPathId)}
-						<div class="mb-2 d-inline-flex">
-							{#if path.waitingTime !== null}
-								<input
-									type="time"
-									class="form-control"
-									id={`timeInputWaiting_${path.itineraryPathId}`}
-									name={`timeInputWaiting_${path.itineraryPathId}`}
-									value={`${String(path.waitingTime.hour).padStart(2, '0')}:${String(
-										path.waitingTime.minute
-									).padStart(2, '0')}`}
-									on:input={(event) => handleUpdateTime(event, path.itineraryPathId, 'waiting')}
-								/>
-								<div class="ml-3 mt-1">
-									<button
-										title="Remover"
-										on:click|preventDefault={() => handleRemoveStop(path.itineraryPathId)}
-										class="btn btn-sm btn-danger shadow-sm"
-									>
-										<i class="fas fa-trash fa-sm" />
-									</button>
-								</div>
-							{:else}
-								<div class="">
-									<input type="time" class="form-control invisible" name="timeInput" />
-								</div>
-								<div class="ml-3 mt-1">
-									<button
-										title="Remover"
-										on:click|preventDefault={() => handleRemoveStop(path.itineraryPathId)}
-										class="btn btn-sm btn-danger shadow-sm"
-									>
-										<i class="fas fa-trash fa-sm" />
-									</button>
-								</div>
-							{/if}
-						</div>
-					{/each}
-				</div>
-			</div>
-			<!-- add here -->
-		</div>
-	</div>
-</div>
-
 <div>
 	<div class="d-flex flex-column">
 		<div class="d-flex flex-row justify-content-start mb-4">
@@ -480,7 +350,7 @@
 				<h5>Paragens</h5>
 			</div>
 			<div>
-				<button class="btn btn-sm btn-primary">+ Adicionar</button>
+				<button class="btn btn-sm btn-primary" on:click={addEmptySelect}>+ Adicionar</button>
 			</div>
 		</div>
 		<div class="d-flex flex-row justify-content-center">
@@ -506,17 +376,24 @@
 					/>
 				{/if}
 			</div>
-			<div><input type="time" class="form-control" /></div>
-			<div><input type="time" class="form-control" /></div>
+			<div><input type="time" class="form-control invisible" /></div>
+			<div><input type="time" class="form-control invisible" /></div>
 			<div class="mt-1">
 				<button
 					title="Remover"
-					on:click|preventDefault={() => handleRemoveStop(path.itineraryPathId)}
-					class="btn btn-sm btn-danger shadow-sm"
+					on:click={addEmptySelect}
+					class="btn btn-sm btn-danger shadow-sm invisible"
 				>
 					<i class="fas fa-trash fa-sm" />
 				</button>
 			</div>
+		</div>
+		<div id="empty-div-container" class="d-flex flex-column">
+			<div id="empty-select-container"></div>
+			<div id="empty-departureTime-container"></div>
+			<div id="empty-arrivalTime-container"></div>
+			<div id="empty-waitingTime-container"></div>
+			<div id="delete-trash-container"></div>
 		</div>
 		<div class="d-flex flex-row justify-content-center">
 			<div class="w-100">
@@ -527,7 +404,7 @@
 				</select>
 			</div>
 
-			<div><input type="time" class="form-control" /></div>
+			<div><input type="time" class="form-control invisible" /></div>
 			<div>
 				{#if itineraryDetails.paths[itineraryDetails.paths.length - 1].arrivalTime !== null}
 					<input
@@ -549,12 +426,12 @@
 				{/if}
 			</div>
 
-			<div><input type="time" class="form-control" /></div>
+			<div><input type="time" class="form-control invisible" /></div>
 			<div class="mt-1">
 				<button
 					title="Remover"
-					on:click|preventDefault={() => handleRemoveStop(path.itineraryPathId)}
-					class="btn btn-sm btn-danger shadow-sm"
+					on:click={addEmptySelect}
+					class="btn btn-sm btn-danger shadow-sm invisible"
 				>
 					<i class="fas fa-trash fa-sm" />
 				</button>
