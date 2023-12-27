@@ -24,7 +24,7 @@
 		data-bs-toggle="modal"
 		data-bs-target="#exampleModal"
 	>
-		Launch demo modal now
+		Launch demo modal!
 	</button>
 
 	<!-- Modal -->
