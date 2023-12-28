@@ -57,7 +57,7 @@
 
 <section>
 	<div class="search-wrapper">
-		<label for="search">Search Users</label>
+		<label for="search">Search Users Here</label>
 		<input type="search" id="search" data-search />
 		<button on:click={() => clearFilter()}>Clear Filters</button>
 	</div>
