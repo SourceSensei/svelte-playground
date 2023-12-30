@@ -268,14 +268,14 @@
 		<div class="d-flex flex-column">
 			<div class="d-inline-flex">
 				<div>
-					<h4>Paragens</h4>
+					<h4>Todas as Paragens</h4>
 				</div>
 				<div>
 					<button on:click={addEmptySelect}>+ Adicionar</button>
 				</div>
 			</div>
 			<div>
-				<select class="form-control" disabled>
+				<select class="form-control">
 					<option value={itineraryDetails.departureStation.stationName}>
 						{itineraryDetails.departureStation.stationName}
 					</option>
