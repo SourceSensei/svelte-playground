@@ -1,17 +1,37 @@
 <script>
-	import City from './city/+page.svelte';
+	import CheckItinerary from './checkitinerary/+page.svelte';
+	import CheckPaths from './checkpaths/+page.svelte';
+	import CheckRoutes from './checkroutes/+page.svelte';
+	import Modal from './modal/+page.svelte';
+	import Shop from './shop/+page.svelte';
+	import Search from './search/+page.svelte';
 </script>
 
 <main class="main-container">
 	<h1>Welcome to SvelteKit Playground</h1>
-	<p>Use "/" to navigate between pages or the nav</p>
-	<nav>
-		<a href="/city">City</a>
-		<a href="/checkpaths">Check Paths</a>
-		<a href="/checkroutes">Check Routes</a>
-		<a href="/tooltip">Tooltip</a>
-		<a href="/datePlayground">Date/Time Playground</a>
-	</nav>
+
+	<div>
+		<nav>
+			<div>
+				<a href="/checkitinerary">Itinerary</a>
+			</div>
+			<div>
+				<a href="/checkpaths">Paths</a>
+			</div>
+			<div>
+				<a href="/checkroutes">Routes</a>
+			</div>
+			<div>
+				<a href="/modal">Modal Example</a>
+			</div>
+			<div>
+				<a href="/shop">Shop Example</a>
+			</div>
+			<div>
+				<a href="/search">Search Example</a>
+			</div>
+		</nav>
+	</div>
 </main>
 
 <style>
