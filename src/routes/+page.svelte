@@ -24,9 +24,9 @@
 			<div>
 				<a href="/modal">Modal Example</a>
 			</div>
-			<div>
+			<!-- <div>
 				<a href="/shop">Shop Example</a>
-			</div>
+			</div> -->
 			<div>
 				<a href="/search">Search Example</a>
 			</div>
