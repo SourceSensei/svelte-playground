@@ -13,7 +13,7 @@
 	<div>
 		<nav>
 			<div>
-				<a href="/checkitinerary">Itinerary</a>
+				<a href="/checkitinerary">Itinerar</a>
 			</div>
 			<div>
 				<a href="/checkpaths">Paths</a>
